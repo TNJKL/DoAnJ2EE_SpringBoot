@@ -1,0 +1,75 @@
+Ở bài quản lý sách thầy truy cập : http://localhost:8080/books
+Ở bài quản lý sinh viên thầy truy cập : http://localhost:8080
+http://localhost:8080/students
+http://localhost:8080/subjects
+http://localhost:8080/classes
+http://localhost:8080/faculties
+http://localhost:8080/enrollments
+http://localhost:8080/enrollments/student
+
+Cám ơn thầy đã đọc !
+
+Database:
+
+Database Quan Ly sach:
+-- Tạo bảng book
+CREATE TABLE book (
+    id INT  PRIMARY KEY IDENTITY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL
+);
+
+
+
+Database Quan Ly Sinh Vien :
+-- Bảng Faculty (Khoa)
+CREATE TABLE faculties (
+    id BIGINT  PRIMARY KEY IDENTITY,
+    name VARCHAR(255) NOT NULL
+);
+
+-- Bảng Subject (Môn học)
+CREATE TABLE subjects (
+    id BIGINT  PRIMARY KEY IDENTITY,
+    name VARCHAR(255) NOT NULL,
+    faculty_id BIGINT,
+    CONSTRAINT fk_subject_faculty FOREIGN KEY (faculty_id)
+        REFERENCES faculties(id)
+        ON DELETE SET NULL
+);
+
+-- Bảng StudentClass (Lớp học)
+CREATE TABLE student_classes (
+    id BIGINT  PRIMARY KEY IDENTITY,
+    name VARCHAR(255) NOT NULL,
+    subject_id BIGINT,
+    CONSTRAINT fk_class_subject FOREIGN KEY (subject_id)
+        REFERENCES subjects(id)
+        ON DELETE SET NULL
+);
+
+-- Bảng Student (Sinh viên)
+CREATE TABLE students (
+    id BIGINT  PRIMARY KEY IDENTITY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(255) UNIQUE
+);
+
+-- Bảng Enrollment (Đăng ký học - Many-to-Many)
+CREATE TABLE enrollments (
+    student_id BIGINT,
+    class_id BIGINT,
+    PRIMARY KEY (student_id, class_id),
+    CONSTRAINT fk_enrollment_student FOREIGN KEY (student_id)
+        REFERENCES students(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_enrollment_class FOREIGN KEY (class_id)
+        REFERENCES student_classes(id)
+        ON DELETE CASCADE
+);
+
+
+
+
+

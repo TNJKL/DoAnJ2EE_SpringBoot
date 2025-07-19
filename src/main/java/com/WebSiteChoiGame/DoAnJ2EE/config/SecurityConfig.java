@@ -13,6 +13,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .headers(headers -> headers.frameOptions(frame -> frame.disable())) // Cho phép nhúng iframe
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll()
             );

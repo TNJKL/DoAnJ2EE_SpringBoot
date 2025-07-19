@@ -84,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(),
                     JacksonFactory.getDefaultInstance())
-                    .setAudience(Collections.singletonList("267133604551-1o2tmquuped0ku5ofm8ke7l26illnp58.apps.googleusercontent.com"))
+                    .setAudience(Collections.singletonList("")) //them client ID của bạn vào đây
                     .build();
             GoogleIdToken idToken = verifier.verify(googleToken);
             if (idToken == null) {

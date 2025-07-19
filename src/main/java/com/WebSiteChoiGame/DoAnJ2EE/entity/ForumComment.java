@@ -1,5 +1,6 @@
 package com.WebSiteChoiGame.DoAnJ2EE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ public class ForumComment {
 
     @ManyToOne
     @JoinColumn(name = "postID", nullable = false)
+    @JsonIgnore
     private ForumPost post;
 
     @ManyToOne

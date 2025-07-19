@@ -1,5 +1,7 @@
 package com.WebSiteChoiGame.DoAnJ2EE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -22,7 +24,12 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "RoleID", nullable = false)
+    @JsonIgnoreProperties("users")
     private Role role;
+
+    @OneToMany(mappedBy = "createdBy")
+    @JsonIgnore
+    private List<Game> games;
 
     private LocalDateTime createdAt;
 

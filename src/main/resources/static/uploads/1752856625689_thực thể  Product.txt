@@ -1,0 +1,98 @@
+thực thể : Product
+thuộc tính : productId: int
+- name: string
+- description: string
+- price: decimal
+- costPrice: decimal
+- quantity: int
+- soldQuantity: int
+- status: string
+
+
+
+thực thể : Category
+thuộc tính : categoryId: int
+- name: string
+- description: string
+
+
+thực thể : Brand
+thuộc tính :  brandId: int
+- name: string
+-description : string
+
+
+thực thể : User
+thuộc tính : - userId: int
+- username: string
+- password: string
+- email: string
+- role: string
+
+thực thể : Cart
+thuộc tính :  cartId: int
+
+thực thể : Wishlist
+thuộc tính :- wishlistId: int
+
+
+thực thể : Compare
+thuộc tính :- compareId: int
+
+thực thể :  Order
+thuộc tính :  orderId: int
+- orderDate: DateTime
+- totalAmount: decimal
+- shippingAddress: string
+- status: string
+
+
+thực thể :OrderDetail
+thuộc tính :- orderDetailId: int
+- quantity: int
+- unitPrice: decimal
+
+
+thực thể : Rating
+thuộc tính : - ratingId: int
+- star: int
+- comment: string
+- date: DateTime
+
+thực thể : Shipping
+thuộc tính : shippingId: int
+- region: string
+- fee: decimal
+
+thực thể : Message
+thuộc tính : - messageId: int
+- content: string
+- sentDate: DateTime
+
+
+thực thể : Statistic
+thuộc tính : - statisticId: int
+- totalRevenue: decimal
+- totalSales: int
+- reportDate: DateTime
+
+
+
+
+
+
+MỐI QUAN HỆ :
+| **Mối quan hệ**       | **Chi tiết**                                                                              |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| Product – Category    | Một Category có nhiều Product. Product thuộc về một Category. *(1 Category : N Product)*  |
+| Product – Brand       | Một Brand có nhiều Product. Product thuộc về một Brand. *(1 Brand : N Product)*           |
+| User – Wishlist       | Một User có một Wishlist. Wishlist chứa nhiều Product *(1 User : 1 Wishlist – N Product)* |
+| User – Compare        | Một User có một Compare. Compare chứa nhiều Product *(1 User : 1 Compare – N Product)*    |
+| User – Cart           | Một User có một Cart. Cart chứa nhiều Product *(1 User : 1 Cart – N Product)*             |
+| User – Order          | Một User có nhiều Order. *(1 User : N Order)*                                             |
+| Order – OrderDetail   | Một Order có nhiều OrderDetail. *(1 Order : N OrderDetail)*                               |
+| OrderDetail – Product | Một OrderDetail gắn với 1 Product. *(1 Product : N OrderDetail)*                          |
+| User – Rating         | Một User có thể đánh giá nhiều Product *(1 User : N Rating)*                              |
+| Product – Rating      | Một Product có thể có nhiều Rating *(1 Product : N Rating)*                               |
+| User – Message        | Một User có thể gửi/nhận nhiều Message *(1 User : N Message gửi + N Message nhận)*        |
+| Shipping – Order      | Một Order gắn với một Shipping (khu vực vận chuyển) *(1 Shipping : N Order)*              |

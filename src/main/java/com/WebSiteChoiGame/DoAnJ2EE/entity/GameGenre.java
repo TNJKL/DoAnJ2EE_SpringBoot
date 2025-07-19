@@ -1,5 +1,6 @@
 package com.WebSiteChoiGame.DoAnJ2EE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.*;
 
@@ -14,6 +15,7 @@ public class GameGenre {
     private String name;
 
     @OneToMany(mappedBy = "genre")
+    @JsonIgnore
     private List<Game> games;
 
     // Getters and setters

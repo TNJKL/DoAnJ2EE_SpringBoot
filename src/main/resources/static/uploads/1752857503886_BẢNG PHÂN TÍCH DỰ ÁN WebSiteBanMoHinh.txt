@@ -1,0 +1,260 @@
+BẢNG PHÂN TÍCH DỰ ÁN "WebSiteBanMoHinh" (Cập nhật chi tiết)
+Vai trò người dùng chính:
+Khách hàng (Customer): Người dùng cuối mua sắm trên website.
+Quản trị viên (Admin): Có toàn quyền quản lý hệ thống.
+Nhân viên (Employee): Có quyền quản lý các hoạt động kinh doanh (sản phẩm, đơn hàng, v.v.) nhưng không quản lý người dùng và các cấu hình hệ thống cốt lõi.
+Chăm sóc khách hàng (CSKH): Tập trung vào việc tương tác và hỗ trợ khách hàng qua hệ thống tin nhắn/chat.
+EPIC 1: Quản lý Sản Phẩm
+Mô tả: Cho phép người có thẩm quyền quản lý toàn bộ vòng đời của sản phẩm trên website.
+Story 1.1: Là một Admin/Employee, tôi muốn thêm sản phẩm mới vào hệ thống để mở rộng danh mục hàng hóa.
+Task 1.1.1: (UI - Admin Page) Thiết kế giao diện form thêm sản phẩm (Areas/Admin/Views/Product/Create.cshtml).
+Subtask 1.1.1.1: Tạo trường nhập liệu cho: Tên sản phẩm, Slug (tự động tạo/tùy chỉnh), Mô tả ngắn, Mô tả chi tiết (có thể dùng Rich Text Editor).
+Subtask 1.1.1.2: Tạo trường nhập liệu cho: Giá bán, Giá vốn (nếu cần theo dõi), Số lượng tồn kho ban đầu.
+Subtask 1.1.1.3: Dropdown/Autocomplete để chọn Danh mục (CategoryModel) từ danh sách hiện có.
+Subtask 1.1.1.4: Dropdown/Autocomplete để chọn Thương hiệu (BrandModel) từ danh sách hiện có.
+Subtask 1.1.1.5: Chức năng upload hình ảnh đại diện cho sản phẩm.
+Subtask 1.1.1.6: Chức năng upload nhiều hình ảnh chi tiết cho sản phẩm (lưu vào ProductImage).
+Subtask 1.1.1.7: Checkbox/Radio button cho các thuộc tính sản phẩm (ví dụ: Nổi bật, Mới, Khuyến mãi).
+Subtask 1.1.1.8: Thiết kế nút "Lưu", "Lưu và Tiếp tục thêm", "Hủy".
+Task 1.1.2: (Backend - Admin/ProductController.cs - Create Action) Xây dựng logic để lưu thông tin sản phẩm.
+Subtask 1.1.2.1: Validate dữ liệu đầu vào (ProductModel và ProductImage validation).
+Subtask 1.1.2.2: Xử lý upload và lưu trữ hình ảnh sản phẩm (đảm bảo tên file duy nhất, có thể resize/optimize).
+Subtask 1.1.2.3: Tạo bản ghi mới trong bảng Products và ProductImages.
+Subtask 1.1.2.4: Hiển thị thông báo thành công/thất bại và chuyển hướng phù hợp.
+Story 1.2: Là một Admin/Employee, tôi muốn xem danh sách tất cả sản phẩm để dễ dàng theo dõi và quản lý.
+Task 1.2.1: (UI - Admin Page) Thiết kế giao diện hiển thị danh sách sản phẩm (Areas/Admin/Views/Product/Index.cshtml).
+Subtask 1.2.1.1: Bảng hiển thị các cột: Hình ảnh đại diện, Tên sản phẩm, SKU (Mã sản phẩm - nếu có), Danh mục, Thương hiệu, Giá bán, Số lượng tồn, Trạng thái (Đang bán/Ẩn/Hết hàng).
+Subtask 1.2.1.2: Nút "Thêm mới sản phẩm" dẫn đến trang tạo sản phẩm.
+Subtask 1.2.1.3: Nút "Sửa" và "Xóa" (hoặc "Ẩn/Hiện") cho mỗi sản phẩm.
+Subtask 1.2.1.4: Chức năng tìm kiếm sản phẩm (theo tên, SKU).
+Subtask 1.2.1.5: Chức năng lọc sản phẩm (theo danh mục, thương hiệu, trạng thái).
+Subtask 1.2.1.6: Phân trang cho danh sách sản phẩm.
+Task 1.2.2: (Backend - Admin/ProductController.cs - Index Action) Xây dựng logic để lấy và hiển thị danh sách sản phẩm.
+Subtask 1.2.2.1: Lấy dữ liệu từ Products (join với Categories, Brands).
+Subtask 1.2.2.2: Triển khai logic tìm kiếm, lọc, phân trang.
+Story 1.3: Là một Admin/Employee, tôi muốn chỉnh sửa thông tin sản phẩm hiện có.
+Task 1.3.1: (UI - Admin Page) Thiết kế giao diện form sửa sản phẩm (Areas/Admin/Views/Product/Edit.cshtml), tương tự form thêm mới nhưng có sẵn dữ liệu cũ.
+Subtask 1.3.1.1: Hiển thị hình ảnh hiện tại và cho phép thay thế/xóa/thêm mới hình ảnh chi tiết.
+Task 1.3.2: (Backend - Admin/ProductController.cs - Edit Action) Xây dựng logic cập nhật thông tin sản phẩm.
+Subtask 1.3.2.1: Lấy thông tin sản phẩm hiện tại để điền vào form.
+Subtask 1.3.2.2: Validate dữ liệu đầu vào.
+Subtask 1.3.2.3: Xử lý cập nhật/thay đổi/xóa hình ảnh.
+Subtask 1.3.2.4: Cập nhật bản ghi trong bảng Products và ProductImages.
+Story 1.4: Là một Admin/Employee, tôi muốn thay đổi trạng thái sản phẩm (ví dụ: Ẩn/Hiện, Hết hàng).
+Task 1.4.1: (UI - Admin Page) Nút/Chức năng thay đổi trạng thái nhanh trên danh sách sản phẩm hoặc trong form sửa.
+Task 1.4.2: (Backend - Admin/ProductController.cs) Action để cập nhật trạng thái sản phẩm (có thể dùng AJAX).
+Story 1.5: Là một Admin/Employee, tôi muốn xóa sản phẩm (xóa mềm được ưu tiên).
+Task 1.5.1: (UI - Admin Page) Nút xóa sản phẩm, có hộp thoại xác nhận.
+Task 1.5.2: (Backend - Admin/ProductController.cs - Delete Action) Logic xóa sản phẩm (cập nhật cờ IsDeleted hoặc trạng thái tương tự).
+EPIC 2: Quản lý Danh mục & Thương hiệu
+Mô tả: Cho phép người có thẩm quyền tổ chức sản phẩm theo danh mục và thương hiệu.
+Story 2.1: Là một Admin/Employee, tôi muốn quản lý danh mục sản phẩm (CRUD).
+Task 2.1.1: (UI - Admin Page) Thiết kế giao diện quản lý danh mục (Areas/Admin/Views/Category/).
+Subtask 2.1.1.1: Form thêm/sửa danh mục: Tên danh mục, Slug, Mô tả, Hình ảnh đại diện (nếu có), Danh mục cha (nếu hỗ trợ danh mục đa cấp), Trạng thái (Hiện/Ẩn).
+Subtask 2.1.1.2: Danh sách danh mục hiển thị Tên, Slug, Số lượng sản phẩm, Trạng thái, nút Sửa/Xóa.
+Task 2.1.2: (Backend - Admin/CategoryController.cs) Xây dựng logic CRUD cho Danh mục (CategoryModel).
+Subtask 2.1.2.1: Validate dữ liệu.
+Subtask 2.1.2.2: Xử lý logic thêm, sửa, xóa (mềm/cứng) danh mục.
+Story 2.2: Là một Admin/Employee, tôi muốn quản lý thương hiệu sản phẩm (CRUD).
+Task 2.2.1: (UI - Admin Page) Thiết kế giao diện quản lý thương hiệu (Areas/Admin/Views/Brand/).
+Subtask 2.2.1.1: Form thêm/sửa thương hiệu: Tên thương hiệu, Slug, Mô tả, Logo, Trạng thái.
+Subtask 2.2.1.2: Danh sách thương hiệu hiển thị Tên, Logo, Số lượng sản phẩm, Trạng thái, nút Sửa/Xóa.
+Task 2.2.2: (Backend - Admin/BrandController.cs) Xây dựng logic CRUD cho Thương hiệu (BrandModel).
+Subtask 2.2.2.1: Validate dữ liệu.
+Subtask 2.2.2.2: Xử lý logic thêm, sửa, xóa (mềm/cứng) thương hiệu.
+EPIC 3: Quản lý Đơn Hàng
+Mô tả: Cho phép người có thẩm quyền theo dõi và xử lý các đơn hàng từ khách hàng.
+Story 3.1: Là một Admin/Employee, tôi muốn xem danh sách tất cả đơn hàng.
+Task 3.1.1: (UI - Admin Page) Thiết kế giao diện danh sách đơn hàng (Areas/Admin/Views/Order/Index.cshtml).
+Subtask 3.1.1.1: Hiển thị: Mã đơn hàng, Tên khách hàng (link tới chi tiết KH), Ngày đặt, Tổng tiền, Trạng thái đơn hàng (ví dụ: Mới, Đã xác nhận, Đang xử lý, Đang giao, Hoàn thành, Đã hủy, Chờ thanh toán), Phương thức thanh toán.
+Subtask 3.1.1.2: Nút xem chi tiết đơn hàng cho mỗi đơn.
+Subtask 3.1.1.3: Chức năng lọc đơn hàng (theo trạng thái, ngày đặt, kênh thanh toán).
+Subtask 3.1.1.4: Chức năng tìm kiếm đơn hàng (theo mã đơn, tên/email khách hàng).
+Subtask 3.1.1.5: Phân trang.
+Task 3.1.2: (Backend - Admin/OrderController.cs - Index Action) Xây dựng logic lấy danh sách đơn hàng (OrderModel, OrderDetails).
+Story 3.2: Là một Admin/Employee, tôi muốn xem chi tiết một đơn hàng cụ thể.
+Task 3.2.1: (UI - Admin Page) Thiết kế giao diện chi tiết đơn hàng (Areas/Admin/Views/Order/Details.cshtml).
+Subtask 3.2.1.1: Thông tin khách hàng: Tên, Địa chỉ giao hàng, SĐT, Email.
+Subtask 3.2.1.2: Danh sách sản phẩm đã đặt: Hình ảnh, Tên, SKU, Số lượng, Đơn giá, Thành tiền.
+Subtask 3.2.1.3: Thông tin thanh toán: Tổng tiền hàng, Phí vận chuyển, Mã giảm giá áp dụng, Tổng cộng, Phương thức thanh toán, Trạng thái thanh toán (Đã thanh toán/Chưa thanh toán).
+Subtask 3.2.1.4: Lịch sử trạng thái đơn hàng (ai thay đổi, khi nào, trạng thái cũ -> mới).
+Subtask 3.2.1.5: (Nếu có) Ghi chú của khách hàng, ghi chú nội bộ của nhân viên.
+Task 3.2.2: (Backend - Admin/OrderController.cs - Details Action) Xây dựng logic lấy chi tiết đơn hàng.
+Story 3.3: Là một Admin/Employee, tôi muốn cập nhật trạng thái đơn hàng.
+Task 3.3.1: (UI - Admin Page) Trong trang chi tiết đơn hàng hoặc danh sách đơn hàng, cho phép chọn trạng thái mới từ dropdown.
+Task 3.3.2: (Backend - Admin/OrderController.cs) Action cập nhật trạng thái đơn hàng.
+Subtask 3.3.2.1: Ghi lại lịch sử thay đổi trạng thái.
+Subtask 3.3.2.2: (Nâng cao) Kích hoạt gửi email/thông báo cho khách hàng khi trạng thái quan trọng thay đổi (ví dụ: Đã xác nhận, Đang giao, Hoàn thành).
+Story 3.4: Là một Admin/Employee, tôi muốn in hóa đơn/phiếu giao hàng.
+Task 3.4.1: (UI - Admin Page) Nút "In hóa đơn"/"In phiếu giao" trên trang chi tiết đơn hàng.
+Task 3.4.2: Thiết kế template hóa đơn/phiếu giao hàng (HTML/CSS có thể convert sang PDF).
+Task 3.4.3: (Backend - Admin/OrderController.cs) Action tạo nội dung để in hoặc tạo file PDF.
+EPIC 4: Quản lý Người Dùng & Phân Quyền
+Mô tả: Cho phép Admin quản lý tài khoản người dùng và vai trò của họ. Employee không có quyền này.
+Story 4.1: Là một Admin, tôi muốn xem danh sách tất cả tài khoản người dùng (bao gồm Khách hàng, Employee, CSKH, Admin khác).
+Task 4.1.1: (UI - Admin Page) Thiết kế giao diện danh sách người dùng (Areas/Admin/Views/User/Index.cshtml).
+Subtask 4.1.1.1: Hiển thị: Username, Họ tên, Email, SĐT, Vai trò, Ngày đăng ký, Trạng thái (Kích hoạt/Vô hiệu hóa).
+Subtask 4.1.1.2: Nút "Thêm mới người dùng".
+Subtask 4.1.1.3: Nút "Sửa", "Thay đổi trạng thái" cho mỗi người dùng.
+Subtask 4.1.1.4: Lọc theo vai trò, trạng thái.
+Task 4.1.2: (Backend - Admin/UserController.cs - Index Action) Logic lấy danh sách người dùng (AppUserModel).
+Story 4.2: Là một Admin, tôi muốn tạo tài khoản người dùng mới (cho Employee, CSKH, hoặc Admin khác).
+Task 4.2.1: (UI - Admin Page) Thiết kế form tạo người dùng (Areas/Admin/Views/User/Create.cshtml).
+Subtask 4.2.1.1: Các trường: Username, Email, Mật khẩu (tạo mật khẩu tạm hoặc yêu cầu đổi sau), Họ tên, SĐT, Chọn vai trò.
+Task 4.2.2: (Backend - Admin/UserController.cs - Create Action) Logic tạo người dùng mới.
+Subtask 4.2.2.1: Validate dữ liệu.
+Subtask 4.2.2.2: Gán vai trò.
+Story 4.3: Là một Admin, tôi muốn chỉnh sửa thông tin và vai trò của một người dùng.
+Task 4.3.1: (UI - Admin Page) Thiết kế form sửa người dùng (Areas/Admin/Views/User/Edit.cshtml).
+Subtask 4.3.1.1: Cho phép thay đổi thông tin cá nhân, đặt lại mật khẩu, thay đổi vai trò, thay đổi trạng thái tài khoản.
+Task 4.3.2: (Backend - Admin/UserController.cs - Edit Action) Logic cập nhật người dùng.
+Story 4.4: Là một Admin, tôi muốn quản lý vai trò (Roles).
+Task 4.4.1: (UI - Admin Page) Thiết kế giao diện quản lý vai trò (Areas/Admin/Views/Role/).
+Subtask 4.4.1.1: Danh sách vai trò hiện có.
+Subtask 4.4.1.2: Form thêm/sửa vai trò (Tên vai trò, Mô tả). (Xóa vai trò có thể phức tạp, cần cân nhắc).
+Task 4.4.2: (Backend - Admin/RoleController.cs) Logic CRUD cho vai trò (sử dụng ASP.NET Core Identity Roles).
+EPIC 5: Cấu hình Website & Chức năng Phụ (Admin & Employee tùy theo mục)
+Mô tả: Cho phép người có thẩm quyền cấu hình các thông số chung và quản lý các module phụ của website.
+Story 5.1: Là một Admin/Employee, tôi muốn quản lý thông tin liên hệ của website.
+Task 5.1.1: (UI - Admin Page) Giao diện cập nhật thông tin liên hệ (Areas/Admin/Views/Contact/, ContactModel).
+Task 5.1.2: (Backend - Admin/ContactController.cs) Logic lưu thông tin liên hệ.
+Story 5.2: Là một Admin/Employee, tôi muốn quản lý Slider/Banner ở trang chủ.
+Task 5.2.1: (UI - Admin Page) Giao diện CRUD slider (Areas/Admin/Views/Slider/, SliderModel).
+Task 5.2.2: (Backend - Admin/SliderController.cs) Logic CRUD cho slider.
+Story 5.3: Là một Admin/Employee, tôi muốn quản lý mã giảm giá (Coupons).
+Task 5.3.1: (UI - Admin Page) Giao diện CRUD mã giảm giá (Areas/Admin/Views/Coupon/, CouponModel).
+Subtask 5.3.1.1: Các trường: Mã, Mô tả, Loại giảm (%, số tiền), Giá trị, Ngày bắt đầu/kết thúc, Số lần sử dụng tối đa, Đơn hàng tối thiểu, Áp dụng cho sản phẩm/danh mục cụ thể (nếu có).
+Task 5.3.2: (Backend - Admin/CouponController.cs) Logic CRUD mã giảm giá.
+Story 5.4: Là một Admin/Employee, tôi muốn quản lý cấu hình vận chuyển.
+Task 5.4.1: (UI - Admin Page) Giao diện cấu hình phương thức vận chuyển và phí (Areas/Admin/Views/Shipping/, ShippingModel).
+Task 5.4.2: (Backend - Admin/ShippingController.cs) Logic lưu cấu hình vận chuyển.
+Story 5.5: Là một Admin/Employee, tôi muốn xem bảng điều khiển (Dashboard) tổng quan.
+Task 5.5.1: (UI - Admin Page) Thiết kế giao diện dashboard (Areas/Admin/Views/Dashboard/).
+Subtask 5.5.1.1: Hiển thị các số liệu: Doanh thu (theo ngày/tuần/tháng), Số đơn hàng mới, Khách hàng mới, Sản phẩm bán chạy, Lượng truy cập (nếu có tích hợp).
+Subtask 5.5.1.2: Biểu đồ trực quan hóa dữ liệu.
+Subtask 5.5.1.3: (RBAC) Employee có thể thấy ít thông tin hơn Admin (ví dụ: không thấy thông tin liên quan đến quản lý người dùng).
+Task 5.5.2: (Backend - Admin/DashboardController.cs) Logic lấy và tổng hợp dữ liệu thống kê (StatisticalModel).
+EPIC 6: Trải nghiệm Khách hàng - Duyệt Web & Tìm kiếm Sản phẩm
+Mô tả: Cho phép Khách hàng duyệt, tìm kiếm và xem thông tin sản phẩm một cách dễ dàng.
+Story 6.1: Là một Khách hàng, tôi muốn xem trang chủ với các thông tin nổi bật.
+Task 6.1.1: (UI - User Page) Thiết kế trang chủ (Views/Home/Index.cshtml).
+Subtask 6.1.1.1: Hiển thị Slider/Banner (SliderModel).
+Subtask 6.1.1.2: Các section: Sản phẩm mới, Sản phẩm bán chạy, Sản phẩm khuyến mãi.
+Subtask 6.1.1.3: (Nếu có) Blog/Tin tức mới.
+Task 6.1.2: (Backend - HomeController.cs) Logic lấy dữ liệu cho trang chủ.
+Story 6.2: Là một Khách hàng, tôi muốn xem danh sách sản phẩm (trang danh mục, trang thương hiệu, kết quả tìm kiếm).
+Task 6.2.1: (UI - User Page) Thiết kế trang danh sách sản phẩm (Views/Product/Index.cshtml, Views/Category/Details.cshtml, Views/Brand/Details.cshtml).
+Subtask 6.2.1.1: Hiển thị sản phẩm (Grid/List view): Hình ảnh, Tên, Giá (giá gốc, giá KM), Đánh giá (sao), Nút "Thêm vào giỏ", "Xem chi tiết", "Thêm vào yêu thích".
+Subtask 6.2.1.2: Bộ lọc: Khoảng giá, Danh mục (nếu đang ở trang chung), Thương hiệu, Thuộc tính sản phẩm (màu sắc, kích thước - nếu có).
+Subtask 6.2.1.3: Sắp xếp: Mới nhất, Giá tăng/giảm, Bán chạy, Đánh giá cao.
+Subtask 6.2.1.4: Phân trang (Paginate.cs).
+Task 6.2.2: (Backend - ProductController.cs, CategoryController.cs, BrandController.cs) Logic lấy danh sách sản phẩm, hỗ trợ lọc, sắp xếp, phân trang.
+Story 6.3: Là một Khách hàng, tôi muốn xem chi tiết một sản phẩm.
+Task 6.3.1: (UI - User Page) Thiết kế trang chi tiết sản phẩm (Views/Product/Details.cshtml).
+Subtask 6.3.1.1: Gallery hình ảnh sản phẩm (ảnh chính, ảnh con, zoom).
+Subtask 6.3.1.2: Thông tin: Tên, SKU, Giá (giá gốc, giá KM, % giảm), Thương hiệu, Danh mục, Mô tả ngắn, Mô tả chi tiết, Thông số kỹ thuật (nếu có).
+Subtask 6.3.1.3: Tình trạng tồn kho (Còn hàng/Hết hàng/Sắp có hàng).
+Subtask 6.3.1.4: Chọn số lượng mua.
+Subtask 6.3.1.5: Nút "Thêm vào giỏ hàng", "Mua ngay".
+Subtask 6.3.1.6: Nút "Thêm vào danh sách yêu thích" (WishlistModel).
+Subtask 6.3.1.7: Nút "So sánh sản phẩm" (CompareModel).
+Subtask 6.3.1.8: Section đánh giá sản phẩm (RatingModel): hiển thị đánh giá, form gửi đánh giá (nếu đã mua).
+Subtask 6.3.1.9: Section sản phẩm liên quan/cùng danh mục.
+Task 6.3.2: (Backend - ProductController.cs - Details Action) Logic lấy chi tiết sản phẩm.
+Story 6.4: Là một Khách hàng, tôi muốn tìm kiếm sản phẩm theo từ khóa.
+Task 6.4.1: (UI - User Page) Thanh tìm kiếm (thường ở header).
+Task 6.4.2: (UI - User Page) Trang hiển thị kết quả tìm kiếm (tái sử dụng layout của Story 6.2).
+Task 6.4.3: (Backend - ProductController.cs hoặc HomeController.cs) Logic xử lý tìm kiếm, trả về kết quả.
+Story 6.5: Là một Khách hàng, tôi muốn xem các trang thông tin tĩnh (Giới thiệu, Chính sách, Liên hệ).
+Task 6.5.1: (UI - User Page) Thiết kế các trang tĩnh (Views/Home/About.cshtml, Views/Home/Contact.cshtml, etc.).
+Task 6.5.2: (Backend - HomeController.cs) Actions cho các trang tĩnh, lấy nội dung từ DB hoặc file.
+EPIC 7: Quản lý Tài khoản Khách hàng
+Mô tả: Cho phép Khách hàng đăng ký, đăng nhập và quản lý thông tin tài khoản cá nhân.
+Story 7.1: Là một Khách hàng, tôi muốn đăng ký tài khoản mới.
+Task 7.1.1: (UI - User Page) Form đăng ký (Views/Account/Register.cshtml).
+Task 7.1.2: (Backend - AccountController.cs - Register Action) Logic đăng ký (AppUserModel).
+Subtask 7.1.2.1: (Nâng cao) Gửi email xác thực.
+Story 7.2: Là một Khách hàng, tôi muốn đăng nhập vào hệ thống.
+Task 7.2.1: (UI - User Page) Form đăng nhập (Views/Account/Login.cshtml).
+Subtask 7.2.1.1: Liên kết "Quên mật khẩu".
+Task 7.2.2: (Backend - AccountController.cs - Login Action) Logic đăng nhập.
+Story 7.3: Là một Khách hàng, tôi muốn đăng xuất.
+Task 7.3.1: (UI - User Page) Nút/Link đăng xuất.
+Task 7.3.2: (Backend - AccountController.cs - Logout Action) Logic đăng xuất.
+Story 7.4: Là một Khách hàng (đã đăng nhập), tôi muốn quản lý hồ sơ cá nhân.
+Task 7.4.1: (UI - User Page) Trang quản lý tài khoản (Views/Account/Manage/Index.cshtml hoặc tương tự).
+Subtask 7.4.1.1: Tab/Section: Thông tin cá nhân (sửa tên, SĐT), Địa chỉ giao hàng (thêm/sửa/xóa nhiều địa chỉ), Thay đổi mật khẩu.
+Task 7.4.2: (Backend - AccountController.cs - Manage Actions) Logic cập nhật thông tin.
+Story 7.5: Là một Khách hàng (đã đăng nhập), tôi muốn xem lịch sử đơn hàng.
+Task 7.5.1: (UI - User Page) Trang lịch sử đơn hàng (Views/Account/Orders.cshtml).
+Task 7.5.2: (Backend - AccountController.cs - Orders Action) Logic lấy lịch sử đơn hàng.
+Story 7.6: Là một Khách hàng, tôi muốn sử dụng chức năng "Quên mật khẩu".
+Task 7.6.1: (UI - User Page) Form yêu cầu reset mật khẩu (Views/Account/ForgotPassword.cshtml).
+Task 7.6.2: (UI - User Page) Form đặt lại mật khẩu mới (Views/Account/ResetPassword.cshtml).
+Task 7.6.3: (Backend - AccountController.cs) Logic gửi email reset và xử lý đặt lại mật khẩu.
+Story 7.7: Là một Khách hàng, tôi muốn quản lý danh sách sản phẩm yêu thích (WishlistModel).
+Task 7.7.1: (UI - User Page) Trang danh sách yêu thích. Nút thêm/xóa khỏi yêu thích trên sản phẩm.
+Task 7.7.2: (Backend) Logic CRUD cho Wishlist.
+Story 7.8: Là một Khách hàng, tôi muốn sử dụng chức năng so sánh sản phẩm (CompareModel).
+Task 7.8.1: (UI - User Page) Trang so sánh sản phẩm. Nút thêm/xóa khỏi so sánh trên sản phẩm.
+Task 7.8.2: (Backend) Logic quản lý danh sách so sánh.
+Story 7.9: Là một Khách hàng (đã mua hàng), tôi muốn viết đánh giá cho sản phẩm.
+Task 7.9.1: (UI - User Page) Form gửi đánh giá trên trang chi tiết sản phẩm (RatingModel).
+Task 7.9.2: (Backend) Logic lưu đánh giá, chỉ cho phép người đã mua hàng đánh giá.
+Task 7.9.3: (Admin/Employee) Duyệt đánh giá (nếu cần).
+EPIC 8: Giỏ hàng & Thanh toán (Khách hàng)
+Mô tả: Cho phép Khách hàng quản lý giỏ hàng và hoàn tất quy trình mua hàng.
+Story 8.1: Là một Khách hàng, tôi muốn thêm sản phẩm vào giỏ hàng.
+Task 8.1.1: (UI - User Page) Nút "Thêm vào giỏ" trên sản phẩm. Mini-cart ở header.
+Task 8.1.2: (Backend - CartController.cs) Logic thêm sản phẩm vào giỏ (CartItemModel, session/DB).
+Story 8.2: Là một Khách hàng, tôi muốn xem và chỉnh sửa giỏ hàng.
+Task 8.2.1: (UI - User Page) Trang giỏ hàng (Views/Cart/Index.cshtml).
+Subtask 8.2.1.1: Cập nhật số lượng, xóa sản phẩm, áp dụng mã giảm giá.
+Task 8.2.2: (Backend - CartController.cs) Logic cập nhật giỏ hàng.
+Story 8.3: Là một Khách hàng, tôi muốn tiến hành thanh toán (Checkout).
+Task 8.3.1: (UI - User Page) Quy trình thanh toán nhiều bước (Views/Checkout/).
+Subtask 8.3.1.1: Thông tin giao hàng (chọn từ sổ địa chỉ hoặc nhập mới).
+Subtask 8.3.1.2: Chọn phương thức vận chuyển (hiển thị phí).
+Subtask 8.3.1.3: Chọn phương thức thanh toán (COD, VNPAY, Momo).
+Subtask 8.3.1.4: Tóm tắt đơn hàng, nút "Đặt hàng".
+Task 8.3.2: (Backend - CheckoutController.cs) Logic xử lý đặt hàng, tạo OrderModel, OrderDetails.
+Story 8.4: Là một Khách hàng, tôi muốn thanh toán qua VNPAY.
+Task 8.4.1: (Backend - PaymentController.cs, Services/Vnpay/, VnpayModel) Tích hợp VNPAY.
+Subtask 8.4.1.1: Chuyển hướng sang cổng VNPAY.
+Subtask 8.4.1.2: Xử lý IPN từ VNPAY để cập nhật trạng thái đơn hàng.
+Story 8.5: Là một Khách hàng, tôi muốn thanh toán qua Momo.
+Task 8.5.1: (Backend - PaymentController.cs, Services/Momo/, MomoInfoModel) Tích hợp Momo.
+Subtask 8.5.1.1: Chuyển hướng/hiển thị QR Momo.
+Subtask 8.5.1.2: Xử lý callback từ Momo.
+Story 8.6: Là một Khách hàng, tôi muốn nhận email xác nhận đơn hàng.
+Task 8.6.1: Thiết kế template email.
+Task 8.6.2: Logic gửi email sau khi đặt hàng thành công.
+EPIC 9: Tương tác & Hỗ trợ Khách hàng (Chat & Tin nhắn)
+Mô tả: Cung cấp kênh tương tác real-time và offline cho Khách hàng và nhân viên hỗ trợ.
+Story 9.1: Là một Khách hàng, tôi muốn chat trực tiếp với nhân viên hỗ trợ.
+Task 9.1.1: (UI - User Page) Icon/Widget chat ở góc màn hình (Views/Shared/_ChatWidget.cshtml?, ChatViewModel).
+Subtask 9.1.1.1: Giao diện cửa sổ chat: hiển thị tin nhắn, ô nhập liệu.
+Task 9.1.2: (Backend - ChatHub.cs, MessagesController.cs?) Logic gửi/nhận tin nhắn real-time.
+Subtask 9.1.2.1: (ChatHub) Phương thức SendMessage, ReceiveMessage.
+Subtask 9.1.2.2: Lưu trữ lịch sử chat (MessageModel).
+Subtask 9.1.2.3: Thông báo cho CSKH khi có tin nhắn mới từ khách.
+Story 9.2: Là một nhân viên CSKH (hoặc Admin/Employee nếu được phân công), tôi muốn xem danh sách các cuộc trò chuyện với khách hàng và trả lời họ.
+Task 9.2.1: (UI - Admin/CSKH Page) Giao diện quản lý tin nhắn/chat (MessagesUsersListViewModel, UserMessagesListViewModel, CombinedMessagesViewModel).
+Subtask 9.2.1.1: Danh sách các khách hàng đang có cuộc trò chuyện (hoặc đã từng chat).
+Subtask 9.2.1.2: Khi chọn một khách hàng, hiển thị lịch sử chat và ô nhập liệu để trả lời.
+Subtask 9.2.1.3: Thông báo real-time khi khách hàng nhắn tin.
+Task 9.2.2: (Backend - ChatHub.cs, MessagesController.cs?) Logic cho CSKH gửi/nhận tin nhắn.
+Subtask 9.2.2.1: (ChatHub) Định tuyến tin nhắn từ CSKH đến đúng khách hàng.
+Subtask 9.2.2.2: Lấy lịch sử chat.
+Story 9.3: Là một Khách hàng, tôi muốn gửi tin nhắn offline nếu không có nhân viên hỗ trợ trực tuyến (hoặc qua form liên hệ).
+Task 9.3.1: (UI - User Page) Form liên hệ trên trang "Liên hệ" (Views/Home/Contact.cshtml).
+Task 9.3.2: (Backend - HomeController.cs hoặc MessagesController.cs) Logic lưu tin nhắn từ form liên hệ, thông báo cho Admin/CSKH.
+EPIC 10: Kỹ thuật & Bảo trì
+(Không thay đổi nhiều so với phân tích trước, nhưng vẫn quan trọng)
+Story 10.1: Đảm bảo website có giao diện đáp ứng (Responsive Design).
+Story 10.2: Tối ưu hóa tốc độ tải trang.
+Story 10.3: Bảo mật website (XSS, CSRF, SQL Injection, an toàn mật khẩu).
+Story 10.4: Sao lưu và phục hồi dữ liệu.
+Story 10.5: Quản lý lỗi và logging (ghi log, trang lỗi thân thiện).
+Story 10.6: Triển khai (Deployment) website.
+Story 10.7: Viết Unit Test/Integration Test cho các chức năng quan trọng. (Dựa trên thư mục Test/)

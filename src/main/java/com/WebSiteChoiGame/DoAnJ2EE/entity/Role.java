@@ -1,5 +1,6 @@
 package com.WebSiteChoiGame.DoAnJ2EE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.*;
 
@@ -14,6 +15,7 @@ public class Role {
     private String roleName;
 
     @OneToMany(mappedBy = "role")
+    @JsonIgnoreProperties("role")
     private List<User> users;
 
     // Getters and setters

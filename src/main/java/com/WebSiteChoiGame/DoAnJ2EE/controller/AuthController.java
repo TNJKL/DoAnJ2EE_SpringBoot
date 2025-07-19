@@ -69,7 +69,18 @@ public class AuthController {
 
     @PostMapping("/google-login")
     public ResponseEntity<?> googleLogin(@RequestBody String googleToken) {
-        // TODO: Xác thực Google token, tạo user mới nếu chưa có, trả về AuthResponse (token, role, username, email)
-        return ResponseEntity.status(501).body("Chức năng Google Login sẽ được tích hợp khi có API key!");
+        try {
+            AuthResponse response = authService.googleLogin(googleToken);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        // Nếu dùng session thì request.getSession().invalidate();
+        // Nếu dùng JWT thì chỉ cần frontend xóa token là đủ
+        return ResponseEntity.ok("Đã đăng xuất");
     }
 } 
