@@ -115,6 +115,11 @@ public class AdminController {
     @PostMapping("/games")
     public Game createGame(@RequestBody Game game) {
         game.setIsVisible(true);
+        game.setIsApproved(true);
+        // Nếu không có gameType thì mặc định là placeholder
+        if (game.getGameType() == null || game.getGameType().isEmpty()) {
+            game.setGameType("placeholder");
+        }
         if (game.getCreatedAt() == null) {
             game.setCreatedAt(java.time.LocalDateTime.now());
         }
@@ -128,6 +133,8 @@ public class AdminController {
         game.setTitle(req.getTitle());
         game.setDescription(req.getDescription());
         game.setThumbnailUrl(req.getThumbnailUrl());
+        game.setGameUrl(req.getGameUrl());
+        game.setGameType(req.getGameType());
         // Nếu muốn sửa genre, createdBy thì cần xử lý thêm
         if (req.getGenre() != null && req.getGenre().getGenreID() != null) {
             GameGenre genre = gameGenreRepository.findById(req.getGenre().getGenreID()).orElseThrow();

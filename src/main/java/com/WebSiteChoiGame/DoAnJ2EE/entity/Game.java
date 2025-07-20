@@ -18,6 +18,12 @@ public class Game {
 
     private String thumbnailUrl;
 
+    @Column(length = 500)
+    private String gameUrl; // URL đến game thực tế
+
+    @Column(length = 50)
+    private String gameType; // Loại game: "snake", "puzzle", "racing", etc.
+
     @ManyToOne
     @JoinColumn(name = "genreID", nullable = false)
     private GameGenre genre;
@@ -39,6 +45,10 @@ public class Game {
     public void setDescription(String description) { this.description = description; }
     public String getThumbnailUrl() { return thumbnailUrl; }
     public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
+    public String getGameUrl() { return gameUrl; }
+    public void setGameUrl(String gameUrl) { this.gameUrl = gameUrl; }
+    public String getGameType() { return gameType; }
+    public void setGameType(String gameType) { this.gameType = gameType; }
     public GameGenre getGenre() { return genre; }
     public void setGenre(GameGenre genre) { this.genre = genre; }
     public User getCreatedBy() { return createdBy; }
