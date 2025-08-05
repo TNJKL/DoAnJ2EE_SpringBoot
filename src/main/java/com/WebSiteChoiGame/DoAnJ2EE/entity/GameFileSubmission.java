@@ -1,5 +1,6 @@
 package com.WebSiteChoiGame.DoAnJ2EE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ public class GameFileSubmission {
 
     @ManyToOne
     @JoinColumn(name = "developerID", nullable = false)
+    @JsonIgnoreProperties({"challengesAsChallenger", "challengesAsOpponent", "challengesWon", "challengeBets", "betsOnUser", "coinTransactions"})
     private User developer;
 
     @Column(nullable = false, length = 255)

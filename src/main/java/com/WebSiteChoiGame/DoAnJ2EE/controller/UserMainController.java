@@ -4,6 +4,7 @@ import com.WebSiteChoiGame.DoAnJ2EE.entity.Game;
 import com.WebSiteChoiGame.DoAnJ2EE.entity.GameGenre;
 import com.WebSiteChoiGame.DoAnJ2EE.entity.User;
 import com.WebSiteChoiGame.DoAnJ2EE.entity.ScoreBoard;
+import com.WebSiteChoiGame.DoAnJ2EE.dto.UserGameDTO;
 import com.WebSiteChoiGame.DoAnJ2EE.repository.GameRepository;
 import com.WebSiteChoiGame.DoAnJ2EE.repository.GameGenreRepository;
 import com.WebSiteChoiGame.DoAnJ2EE.repository.UserRepository;
@@ -18,6 +19,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.util.Map;
 import jakarta.annotation.PostConstruct;
+import com.WebSiteChoiGame.DoAnJ2EE.repository.GameSessionRepository;
+import com.WebSiteChoiGame.DoAnJ2EE.entity.GameSession;
+import com.WebSiteChoiGame.DoAnJ2EE.service.ScoreBoardService;
+import com.WebSiteChoiGame.DoAnJ2EE.service.UserCoinsService;
 
 @RestController
 @RequestMapping("/api/user")
@@ -30,6 +35,15 @@ public class UserMainController {
     private UserRepository userRepository;
     @Autowired
     private ScoreBoardRepository scoreBoardRepository;
+
+    @Autowired
+    private GameSessionRepository gameSessionRepository;
+
+    @Autowired
+    private ScoreBoardService scoreBoardService;
+
+    @Autowired
+    private UserCoinsService userCoinsService;
 
     // Constructor để debug
     public UserMainController() {
@@ -56,50 +70,44 @@ public class UserMainController {
                 .collect(Collectors.toList());
     }
 
+    // API lấy danh sách game tối ưu (sử dụng DTO để tránh infinite recursion)
+    @GetMapping("/games/optimized")
+    public List<UserGameDTO> getGamesOptimized(
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "genreId", required = false) Integer genreId,
+            @RequestParam(value = "visible", required = false, defaultValue = "true") Boolean visible
+    ) {
+        List<Game> games = gameRepository.findAll();
+        return games.stream()
+                .filter(g -> (visible == null || Boolean.TRUE.equals(g.getIsVisible())) )
+                .filter(g -> search == null || g.getTitle().toLowerCase().contains(search.toLowerCase()))
+                .filter(g -> genreId == null || (g.getGenre() != null && genreId.equals(g.getGenre().getGenreID())))
+                .map(UserGameDTO::new)
+                .collect(Collectors.toList());
+    }
+
     // API lấy danh sách thể loại game
     @GetMapping("/game-genres")
     public List<GameGenre> getAllGameGenres() {
         return gameGenreRepository.findAll();
     }
 
-    // API lấy leaderboard (top N user có điểm cao nhất)
+    // Lấy leaderboard theo điểm cao
     @GetMapping("/leaderboard")
-    public ResponseEntity<List<UserLeaderboardDTO>> getLeaderboard(@RequestParam(defaultValue = "10") int limit) {
-        if (scoreBoardRepository == null) {
-            return ResponseEntity.ok(new ArrayList<>());
-        }
-        List<ScoreBoard> leaderboard = scoreBoardRepository.findTopByOrderByScoreDesc(PageRequest.of(0, limit));
-        List<UserLeaderboardDTO> result = leaderboard.stream()
-            .map(score -> new UserLeaderboardDTO(score.getUser(), score.getHighScore()))
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(result);
+    public List<Map<String, Object>> getLeaderboard(@RequestParam(defaultValue = "10") int limit) {
+        return scoreBoardService.getTopPlayers(limit);
     }
 
-    // API lấy leaderboard cho game cụ thể
-    @GetMapping("/games/{gameId}/leaderboard")
-    public ResponseEntity<List<UserLeaderboardDTO>> getGameLeaderboard(
-            @PathVariable Integer gameId,
-            @RequestParam(defaultValue = "10") int limit
-    ) {
-        try {
-            Game game = gameRepository.findById(gameId).orElse(null);
-            if (game == null) {
-                return ResponseEntity.badRequest().body(new ArrayList<>());
-            }
+    // Lấy leaderboard theo coin cao nhất
+    @GetMapping("/coin-leaderboard")
+    public List<Map<String, Object>> getCoinLeaderboard(@RequestParam(defaultValue = "10") int limit) {
+        return userCoinsService.getTopCoinUsers(limit);
+    }
 
-            // Tìm tất cả ScoreBoard cho game này và sắp xếp theo điểm cao nhất
-            List<ScoreBoard> gameScores = scoreBoardRepository.findByGameOrderByHighScoreDesc(game);
-            List<UserLeaderboardDTO> result = gameScores.stream()
-                .limit(limit)
-                .map(score -> new UserLeaderboardDTO(score.getUser(), score.getHighScore()))
-                .collect(Collectors.toList());
-            
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            System.err.println("Error getting game leaderboard: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.ok(new ArrayList<>());
-        }
+    // Lấy leaderboard theo game cụ thể
+    @GetMapping("/games/{gameId}/leaderboard")
+    public List<Map<String, Object>> getGameLeaderboard(@PathVariable Integer gameId, @RequestParam(defaultValue = "10") int limit) {
+        return scoreBoardService.getTopPlayersByGame(gameId, limit);
     }
 
     @GetMapping("/games/{gameId}")
@@ -126,6 +134,37 @@ public class UserMainController {
             
             System.out.println("Returning game: " + game.getTitle());
             return ResponseEntity.ok(game);
+        } catch (Exception e) {
+            System.err.println("Error fetching game: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @GetMapping("/games/{gameId}/optimized")
+    public ResponseEntity<UserGameDTO> getGameByIdOptimized(@PathVariable Integer gameId) {
+        try {
+            System.out.println("Fetching game with ID: " + gameId);
+            Game game = gameRepository.findById(gameId).orElse(null);
+            System.out.println("Game found: " + (game != null ? game.getTitle() : "null"));
+            
+            if (game == null) {
+                System.out.println("Game not found");
+                return ResponseEntity.notFound().build();
+            }
+            
+            if (!Boolean.TRUE.equals(game.getIsVisible())) {
+                System.out.println("Game not visible");
+                return ResponseEntity.notFound().build();
+            }
+            
+            if (!Boolean.TRUE.equals(game.getIsApproved())) {
+                System.out.println("Game not approved");
+                return ResponseEntity.notFound().build();
+            }
+            
+            System.out.println("Returning optimized game: " + game.getTitle());
+            return ResponseEntity.ok(new UserGameDTO(game));
         } catch (Exception e) {
             System.err.println("Error fetching game: " + e.getMessage());
             e.printStackTrace();
@@ -249,6 +288,65 @@ public class UserMainController {
             }
         } catch (Exception e) {
             System.err.println("ERROR saving score: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Internal server error: " + e.getMessage());
+        }
+    }
+
+    // API lưu điểm vào GameSessions (cho challenge)
+    @PostMapping("/games/{gameId}/session-score")
+    public synchronized ResponseEntity<?> saveGameSessionScore(
+            @PathVariable Integer gameId,
+            @RequestBody Map<String, Object> request
+    ) {
+        try {
+            Integer score = (Integer) request.get("score");
+            String username = (String) request.get("username");
+            
+            System.out.println("=== SAVE GAME SESSION SCORE ===");
+            System.out.println("Game ID: " + gameId);
+            System.out.println("Username: " + username);
+            System.out.println("Score to save: " + score);
+            
+            if (score == null || username == null) {
+                System.out.println("ERROR: Missing score or username");
+                return ResponseEntity.badRequest().body("Missing score or username");
+            }
+
+            // Tìm user
+            User user = userRepository.findByUsername(username).orElse(null);
+            if (user == null) {
+                System.out.println("ERROR: User not found: " + username);
+                return ResponseEntity.badRequest().body("User not found");
+            }
+            System.out.println("User found: " + user.getUsername());
+
+            // Tìm game
+            Game game = gameRepository.findById(gameId).orElse(null);
+            if (game == null) {
+                System.out.println("ERROR: Game not found: " + gameId);
+                return ResponseEntity.badRequest().body("Game not found");
+            }
+            System.out.println("Game found: " + game.getTitle());
+
+            // Tạo GameSession mới
+            GameSession gameSession = new GameSession();
+            gameSession.setUser(user);
+            gameSession.setGame(game);
+            gameSession.setScore(score);
+            gameSession.setPlayedAt(java.time.LocalDateTime.now());
+            
+            gameSessionRepository.save(gameSession);
+            System.out.println("Game session score saved successfully: " + score);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Game session score saved", 
+                "score", score,
+                "sessionID", gameSession.getSessionID()
+            ));
+            
+        } catch (Exception e) {
+            System.err.println("ERROR saving game session score: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(500).body("Internal server error: " + e.getMessage());
         }

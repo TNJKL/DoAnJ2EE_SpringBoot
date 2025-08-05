@@ -69,6 +69,7 @@ public class ForumController {
         post.setContent(req.content);
         post.setImageUrl(req.imageUrl);
         post.setCreatedAt(LocalDateTime.now());
+        post.setIsApproved(null); // Đảm bảo bài viết mới có trạng thái chờ duyệt
         postRepo.save(post);
         return ResponseEntity.ok(toPostDTO(post));
     }

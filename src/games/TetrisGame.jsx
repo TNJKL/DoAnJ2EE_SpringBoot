@@ -330,7 +330,10 @@ const TetrisGame = ({ onGameEnd }) => {
             console.log('Saving final score:', finalScoreRef.current);
             setHasSavedScore(true);
             setTimeout(() => {
-              saveHighScore(finalScoreRef.current).then(() => {
+              // Lưu vào cả ScoreBoard và GameSessions
+              Promise.all([
+                saveHighScore(finalScoreRef.current)
+              ]).then(() => {
                 if (onGameEnd) {
                   onGameEnd();
                 }

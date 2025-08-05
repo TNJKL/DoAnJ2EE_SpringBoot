@@ -211,7 +211,10 @@ const FlappyBirdGame = ({ onGameEnd }) => {
           setHasSavedScore(true); // Đánh dấu đã lưu
           // Đợi một chút để đảm bảo score đã được cập nhật hoàn toàn
           setTimeout(() => {
-            saveHighScore(finalScoreRef.current).then(() => {
+            // Lưu vào cả ScoreBoard và GameSessions
+            Promise.all([
+              saveHighScore(finalScoreRef.current)
+            ]).then(() => {
               // Gọi callback để refresh leaderboard
               if (onGameEnd) {
                 onGameEnd();

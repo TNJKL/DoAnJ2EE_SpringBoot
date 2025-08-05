@@ -10,6 +10,12 @@ import com.WebSiteChoiGame.DoAnJ2EE.entity.GameFileSubmission;
 import com.WebSiteChoiGame.DoAnJ2EE.repository.GameFileSubmissionRepository;
 import com.WebSiteChoiGame.DoAnJ2EE.entity.ForumPost;
 import com.WebSiteChoiGame.DoAnJ2EE.entity.Game;
+import com.WebSiteChoiGame.DoAnJ2EE.dto.AdminUserDTO;
+import com.WebSiteChoiGame.DoAnJ2EE.dto.AdminGameDTO;
+import com.WebSiteChoiGame.DoAnJ2EE.dto.AdminGameSubmissionDTO;
+import com.WebSiteChoiGame.DoAnJ2EE.dto.AdminForumPostDTO;
+import com.WebSiteChoiGame.DoAnJ2EE.dto.AdminGameManagementDTO;
+import com.WebSiteChoiGame.DoAnJ2EE.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,6 +25,7 @@ import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -46,6 +53,8 @@ public class AdminController {
     private GameFileSubmissionRepository gameFileSubmissionRepository;
     @Autowired
     private GameGenreRepository gameGenreRepository;
+    @Autowired
+    private AdminService adminService;
 
     @GetMapping("/summary")
     public Map<String, Object> getDashboardSummary() {
@@ -57,58 +66,40 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<AdminUserDTO> getAllUsers() {
+        return adminService.getAllUsers();
     }
 
     @GetMapping("/game-submissions")
-    public List<GameFileSubmission> getAllGameSubmissions() {
-        return gameFileSubmissionRepository.findAll();
+    public List<AdminGameSubmissionDTO> getAllGameSubmissions() {
+        return adminService.getAllGameSubmissions();
     }
 
     @GetMapping("/forum-posts/pending")
-    public List<ForumPost> getPendingForumPosts() {
-        return forumPostRepository.findAll().stream()
-            .filter(post -> post.getIsApproved() == null)
-            .toList();
+    public List<AdminForumPostDTO> getPendingForumPosts() {
+        return adminService.getForumPostsByStatus("pending");
     }
 
     @GetMapping("/forum-posts/approved")
-    public List<ForumPost> getApprovedForumPosts() {
-        return forumPostRepository.findAll().stream()
-            .filter(post -> Boolean.TRUE.equals(post.getIsApproved()))
-            .toList();
+    public List<AdminForumPostDTO> getApprovedForumPosts() {
+        return adminService.getForumPostsByStatus("approved");
     }
 
     @GetMapping("/forum-posts/rejected")
-    public List<ForumPost> getRejectedForumPosts() {
-        return forumPostRepository.findAll().stream()
-            .filter(post -> Boolean.FALSE.equals(post.getIsApproved()))
-            .toList();
+    public List<AdminForumPostDTO> getRejectedForumPosts() {
+        return adminService.getForumPostsByStatus("rejected");
     }
 
     // Lấy danh sách game (có thể filter ẩn/hiện)
     @GetMapping("/games")
-    public List<Game> getAllGames(@RequestParam(value = "visible", required = false) Boolean visible) {
-        List<Game> games;
-        if (visible == null) {
-            games = gameRepository.findAll();
-        } else if (visible) {
-            games = gameRepository.findAll().stream()
-                .filter(g -> g.getIsVisible() == null || g.getIsVisible())
-                .toList();
-        } else {
-            games = gameRepository.findAll().stream()
-                .filter(g -> Boolean.FALSE.equals(g.getIsVisible()))
-                .toList();
-        }
-        // Đảm bảo thumbnailUrl là đường dẫn đúng
-        for (Game g : games) {
-            if (g.getThumbnailUrl() != null && !g.getThumbnailUrl().startsWith("/uploads/")) {
-                g.setThumbnailUrl("/uploads/" + g.getThumbnailUrl());
-            }
-        }
-        return games;
+    public List<AdminGameDTO> getAllGames(@RequestParam(value = "visible", required = false) Boolean visible) {
+        return adminService.getAllGames(visible);
+    }
+
+    // Lấy danh sách game cho management (tối ưu performance)
+    @GetMapping("/games/management")
+    public List<AdminGameManagementDTO> getAllGamesForManagement(@RequestParam(value = "visible", required = false) Boolean visible) {
+        return adminService.getAllGamesForManagement(visible);
     }
 
     // Thêm game mới
@@ -274,7 +265,7 @@ public class AdminController {
 
     // API lấy danh sách user có role dev
     @GetMapping("/dev-users")
-    public List<User> getAllDevUsers() {
-        return userRepository.findAllByRole_RoleName("dev");
+    public List<AdminUserDTO> getAllDevUsers() {
+        return adminService.getAllDevUsers();
     }
 } 

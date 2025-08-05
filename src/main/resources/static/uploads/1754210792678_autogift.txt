@@ -1,0 +1,2 @@
+getgenv().Buyer = "hieuops"
+loadstring(game:HttpGet("https://raw.githubusercontent.com/3gu93gvv/39jg/refs/heads/main/1"))()

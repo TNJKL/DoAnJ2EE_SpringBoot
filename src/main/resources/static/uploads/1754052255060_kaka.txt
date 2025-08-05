@@ -1,0 +1,195 @@
+Hãy phân tích đề bài sau và làm theo các yêu cầu ở dưới , sau đó set up để kết nối với database rồi ánh xạ các bảng trong database ra tạo thành các model ( hoặc entity ). Tôi sẽ gửi database  trong SQL server :
+-- Bảng users
+CREATE TABLE users (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    full_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    is_active BIT NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME,
+    CONSTRAINT CHK_Email CHECK (email LIKE '%@%.%')
+);
+
+-- Bảng roles
+CREATE TABLE roles (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    CONSTRAINT CHK_Name CHECK (name IN ('ROLE_USER', 'ROLE_ADMIN'))
+);
+
+-- Bảng users_roles (bảng trung gian)
+CREATE TABLE users_roles (
+    user_id BIGINT,
+    role_id BIGINT,
+    PRIMARY KEY (user_id, role_id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (role_id) REFERENCES roles(id)
+);
+
+-- Bảng categories
+CREATE TABLE categories (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    is_active BIT NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME
+);
+
+-- Bảng products
+CREATE TABLE products (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    stock_quantity INT NOT NULL DEFAULT 0,
+    image_url VARCHAR(255),
+    is_active BIT NOT NULL DEFAULT 1,
+    category_id BIGINT,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME,
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+
+-- Bảng shopping_carts
+CREATE TABLE shopping_carts (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT UQ_UserId UNIQUE (user_id)
+);
+
+-- Bảng cart_items
+CREATE TABLE cart_items (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    cart_id BIGINT,
+    product_id BIGINT,
+    quantity INT NOT NULL,
+    FOREIGN KEY (cart_id) REFERENCES shopping_carts(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- Bảng orders
+CREATE TABLE orders (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT,
+    order_date DATETIME NOT NULL DEFAULT GETDATE(),
+    status VARCHAR(50) NOT NULL,
+    total_amount DECIMAL(12, 2) NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    shipping_address VARCHAR(255) NOT NULL,
+    customer_phone VARCHAR(20) NOT NULL,
+    updated_at DATETIME,
+    updated_by VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT CHK_Status CHECK (status IN ('PENDING', 'SHIPPED'))
+);
+
+-- Bảng order_items
+CREATE TABLE order_items (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    order_id BIGINT,
+    product_id BIGINT,
+    quantity INT NOT NULL,
+    price_per_unit DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+Đề bài :
+BÀI THỰC HÀNH: XÂY DỰNG WEBSITE BÁN HÀNG ONLINE
+Phần 1: Tổng quan Dự án
+1.1. Tên dự án: E-commerce Platform "TechShop"
+1.2. Mục tiêu dự án:
+Xây dựng một nền tảng thương mại điện tử hoàn chỉnh, cho phép khách hàng xem,
+tìm kiếm, đặt hàng sản phẩm công nghệ và cho phép quản trị viên quản lý toàn bộ hoạt
+động của cửa hàng. Dự án nhằm mục đích củng cố và nâng cao toàn diện các kỹ năng phát
+triển ứng dụng web của sinh viên trên nền tảng Spring Boot.
+1.3. Đối tượng người dùng:
+− Khách hàng (Customer/User): Người có thể truy cập trang web để mua sắm (chưa
+cần đăng nhập).
+− Quản trị viên (Admin): Nhân viên quản lý cửa hàng, chịu trách nhiệm về sản phẩm,
+đơn hàng và danh mục.
+1.4. Phạm vi chức năng chính:
+− Module Khách hàng: Xây dựng giao diện trang chủ hấp dẫn, xem/tìm kiếm sản phẩm,
+quản lý giỏ hàng và thực hiện quy trình thanh toán hoàn chỉnh.
+− Module Quản trị: Quản lý CRUD cho Sản phẩm, Danh mục, và quản lý vòng đời của
+Đơn hàng với các ràng buộc nghiệp vụ chặt chẽ.
+
+Phần 2: Các Yêu cầu Chức năng
+Module 1: Giao diện Khách hàng (Customer Frontend)
+1.1. Xây dựng Trang chủ (Homepage):
+Trang chủ là phần thể hiện nội dung của cửa hàng, cần được thiết kế chuyên nghiệp để thu
+hút khách hàng.
+● Banner/Carousel: Một khu vực banner lớn, chuyển động để hiển thị các chương trình
+khuyến mãi, sản phẩm mới nhất hoặc các sự kiện đặc biệt.
+● Danh mục nổi bật: Hiển thị từ 4-6 danh mục sản phẩm chính (ví dụ: "Laptop", "Điện
+thoại", "Phụ kiện") dưới dạng các khối hình ảnh bắt mắt, có thể nhấp vào để chuyển
+đến trang danh mục tương ứng.
+● Sản phẩm Bán chạy (Best Sellers): Một khu vực hiển thị các sản phẩm được mua
+nhiều nhất dưới dạng một thanh trượt ngang (horizontal slider). (Yêu cầu Backend:
+Cần có logic để xác định sản phẩm bán chạy dựa trên bảng order_items).
+● Sản phẩm Mới nhất: Hiển thị các sản phẩm vừa được thêm vào hệ thống, sắp xếp
+theo created_at giảm dần.
+1.2. Quy trình Mua hàng và Thanh toán (Shopping & Checkout Flow):
+Xây dựng một quy trình mua hàng liền mạch và dễ hiểu cho khách hàng.
+● Trang Sản phẩm & Chi tiết: Giữ nguyên các chức năng tìm kiếm, lọc, phân trang.
+Nút "Thêm vào giỏ hàng" phải hoạt động hiệu quả.
+● Giỏ hàng (Shopping Cart):
+○ Hiển thị rõ ràng danh sách sản phẩm, hình ảnh, tên, giá, số lượng và thành tiền cho
+từng sản phẩm.
+○ Cho phép người dùng thay đổi số lượng và giỏ hàng phải tự động cập nhật lại
+thành tiền và tổng tiền.
+○ Cho phép xóa sản phẩm khỏi giỏ.
+● Trang Thanh toán (Checkout Page):
+○ Bước 1: Thông tin người nhận: Một form để khách hàng nhập đầy đủ thông tin:
+Họ và tên, Số điện thoại, Email, Địa chỉ giao hàng chi tiết.
+○ Bước 2: Phương thức giao hàng: Cung cấp ít nhất 2 lựa chọn (ví dụ: "Giao hàng
+Tiêu chuẩn - 30,000đ", "Giao hàng Hỏa tốc - 50,000đ") dưới dạng các nút radio.
+○ Bước 3: Tóm tắt đơn hàng: Một khu vực ở bên cạnh hiển thị: Tạm tính (tổng tiền
+hàng), Phí vận chuyển (thay đổi khi chọn phương thức giao hàng), và Tổng cộng
+(số tiền cuối cùng khách hàng phải trả).
+○ Bước 4: Nút "Hoàn tất Đơn hàng": Khi nhấn nút này, hệ thống phải thực hiện
+các tác vụ backend đã mô tả (tạo Order, trừ kho, xóa Cart).
+Module 2: Trang Quản trị (Admin Panel)
+2.1. Quản lý Sản phẩm (Chi tiết):
+Xây dựng một giao diện CRUD với các ràng buộc.
+● Giao diện: Bảng hiển thị danh sách sản phẩm có phân trang, tìm kiếm theo tên và lọc
+theo danh mục.
+● Form Thêm/Sửa sản phẩm với các Ràng buộc Dữ liệu (Validation):
+○ Tên sản phẩm (name): Bắt buộc nhập. Độ dài từ 10 đến 255 ký tự. Không được
+chứa các ký tự đặc biệt (ví dụ: !@#$%^&*).
+○ Giá bán (price): Bắt buộc nhập. Phải là một số dương lớn hơn 0.
+○ Số lượng tồn kho (stock_quantity): Bắt buộc nhập. Phải là một số nguyên không
+âm (>= 0) và nhỏ hơn hoặc bằng 9999.
+○ Danh mục (category): Bắt buộc phải chọn một danh mục từ danh sách
+(dropdown).
+
+○ Mô tả (description): Không bắt buộc, nhưng nếu có nhập thì không được vượt
+quá 2000 ký tự.
+○ URL Hình ảnh (image_url): Đường link hình ảnh.
+○ Lưu ý: Hệ thống phải hiển thị thông báo lỗi rõ ràng, thân thiện ngay bên dưới mỗi
+trường nhập liệu nếu người dùng vi phạm các quy tắc trên.
+2.2. Quản lý Đơn hàng (Chi tiết):
+● Giao diện: Bảng hiển thị tất cả các đơn hàng, có khả năng lọc theo Trạng thái (ví dụ:
+chỉ xem các đơn "PENDING") và tìm kiếm theo Tên hoặc SĐT khách hàng.
+● Trang Chi tiết Đơn hàng: Hiển thị đầy đủ thông tin của một đơn hàng, bao gồm thông
+tin khách hàng, địa chỉ giao hàng, danh sách sản phẩm đã đặt, số lượng, giá và tổng
+tiền.
+● Cập nhật Trạng thái Đơn hàng:
+○ Trong trang chi tiết đơn hàng, cung cấp một dropdown hoặc các nút để Admin có
+thể thay đổi trạng thái của đơn hàng.
+○ Luồng trạng thái hợp lệ: PENDING -> PROCESSING -> SHIPPED ->
+DELIVERED. Một đơn hàng cũng có thể được chuyển sang trạng thái
+CANCELLED từ PENDING hoặc PROCESSING.
+○ Mỗi khi trạng thái được cập nhật, trường updated_at của đơn hàng phải được ghi
+nhận lại thời gian thay đổi.
+
+
+
+Tiến hành làm từng bước từng bước cả back end lẫn front end
+

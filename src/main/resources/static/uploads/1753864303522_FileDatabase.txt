@@ -1,0 +1,265 @@
+Xin chào thầy , đầu tiên trước hết thầy hãy chạy database ở dưới.
+Sau đó thầy hãy tạo 1 tài khoản ( ví dụ Admin ) sau đó vô bảng user_roles để gán cho tài khoản Admin này thành role Admin thì mới có thể truy cập được trang quản trị nha thầy
+Do em lỡ làm phân quyền nên cần phải gán role 'ROLE_ADMIN' thì mới có thể truy cập được trang quản trị .
+
+
+
+
+
+DATABASE:
+ 
+
+
+-- Bảng users
+CREATE TABLE users (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    username NVARCHAR(50) NOT NULL UNIQUE,
+    password NVARCHAR(255) NOT NULL,
+    email NVARCHAR(100) NOT NULL UNIQUE,
+    full_name NVARCHAR(100) NOT NULL,
+    phone NVARCHAR(20),
+    is_active BIT NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME,
+    CONSTRAINT CHK_Email CHECK (email LIKE '%@%.%')
+);
+
+-- Bảng roles
+CREATE TABLE roles (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(50) NOT NULL UNIQUE,
+    CONSTRAINT CHK_Name CHECK (name IN (N'ROLE_USER', N'ROLE_ADMIN' ,N'ROLE_LEADER' , N'ROLE_MANAGER'))
+);
+
+-- Bảng users_roles (bảng trung gian)
+CREATE TABLE users_roles (
+    user_id BIGINT,
+    role_id BIGINT,
+    PRIMARY KEY (user_id, role_id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (role_id) REFERENCES roles(id)
+);
+
+-- Bảng categories
+CREATE TABLE categories (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL UNIQUE,
+    is_active BIT NOT NULL DEFAULT 1,
+    image_url NVARCHAR(255) NULL,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME
+);
+
+-- Bảng products
+CREATE TABLE products (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    description NTEXT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    stock_quantity INT NOT NULL DEFAULT 0,
+    image_url NVARCHAR(255),
+    is_active BIT NOT NULL DEFAULT 1,
+    category_id BIGINT,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME,
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+
+-- Bảng shopping_carts
+CREATE TABLE shopping_carts (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT UQ_UserId UNIQUE (user_id)
+);
+
+-- Bảng cart_items
+CREATE TABLE cart_items (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    cart_id BIGINT,
+    product_id BIGINT,
+    quantity INT NOT NULL,
+    FOREIGN KEY (cart_id) REFERENCES shopping_carts(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+CREATE TABLE stores (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL,
+    address NVARCHAR(255) NOT NULL,
+    phone NVARCHAR(20),
+    is_active BIT NOT NULL DEFAULT 1
+);
+
+-- Bảng orders
+CREATE TABLE orders (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT,
+    store_id BIGINT NULL,
+    order_date DATETIME NOT NULL DEFAULT GETDATE(),
+    status NVARCHAR(50) NOT NULL,
+    total_amount DECIMAL(12, 2) NOT NULL,
+    customer_name NVARCHAR(100) NOT NULL,
+    shipping_address NVARCHAR(255) NULL,
+    customer_phone NVARCHAR(20) NOT NULL,
+    updated_at DATETIME,
+    updated_by NVARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+	FOREIGN KEY (store_id) REFERENCES stores(id),
+    CONSTRAINT CHK_Status CHECK (status IN (N'PENDING','PROCESSING', N'SHIPPED' , 'DELIVERED' ,'CANCELLED'))
+);
+
+-- Bảng order_items
+CREATE TABLE order_items (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    order_id BIGINT,
+    product_id BIGINT,
+    quantity INT NOT NULL,
+    price_per_unit DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+
+
+
+
+
+CREATE TABLE product_reviews (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment NVARCHAR(1000),
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME,
+    CONSTRAINT FK_ProductReview_Product FOREIGN KEY (product_id) REFERENCES products(id),
+    CONSTRAINT FK_ProductReview_User FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT UQ_Product_User UNIQUE (product_id, user_id) -- Mỗi user chỉ review 1 lần/1 sản phẩm
+);
+
+CREATE TABLE addresses (
+    id BIGINT IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    address_line NVARCHAR(255) NOT NULL,
+    receiver_name NVARCHAR(100),
+    receiver_phone NVARCHAR(20),
+    CONSTRAINT FK_User_Address FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
+CREATE TABLE vouchers (
+    id BIGINT IDENTITY PRIMARY KEY,
+    code NVARCHAR(50) NOT NULL UNIQUE,
+    description NVARCHAR(255),
+    discount_type NVARCHAR(10) NOT NULL, -- 'PERCENT' hoặc 'AMOUNT'
+    discount_value DECIMAL(10,2) NOT NULL,
+    min_order_amount DECIMAL(18,2) NULL,
+    max_discount_amount DECIMAL(18,2) NULL,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL,
+    usage_limit INT NULL,
+    used_count INT NOT NULL DEFAULT 0,
+    is_active BIT NOT NULL DEFAULT 1
+);
+
+
+
+ALTER TABLE orders
+ADD voucher_id BIGINT NULL,
+    voucher_discount DECIMAL(12,2) NULL,
+    CONSTRAINT FK_orders_voucher FOREIGN KEY (voucher_id) REFERENCES vouchers(id);
+
+
+
+--insert dữ liệu--
+
+
+INSERT INTO roles ( name ) VALUES
+('ROLE_ADMIN'),
+('ROLE_USER'),
+('ROLE_MANAGER'),
+('ROLE_LEADER');
+
+
+
+
+INSERT INTO categories (name, is_active, image_url)
+VALUES 
+(N'Điện thoại thông minh', 1, N'https://webstockreview.net/images/smartphone-icon-png-6.png'),
+(N'Máy tính bảng', 1, N'https://images.vexels.com/media/users/3/157345/isolated/preview/934008c8466ce089e15947cec0a7c61d-flat-laptop-icon-laptop.png'),
+(N'Tai nghe', 1, N'https://static.vecteezy.com/system/resources/previews/017/785/096/non_2x/headphone-icon-on-transparent-background-free-png.png'),
+(N'Phụ kiện điện thoại', 1, N'https://cdn-icons-png.flaticon.com/512/644/644521.png'),
+(N'Đồng hồ thông minh', 1, N'https://icon-library.com/images/watch-icon-png/watch-icon-png-20.jpg'),
+(N'Sạc và pin dự phòng', 1, N'https://icon-library.com/images/battery-icon-png/battery-icon-png-9.jpg');
+
+
+-- Lưu ý: category_id sẽ tương ứng theo thứ tự insert ở trên (1 = Điện thoại, 2 = Máy tính bảng, ...)
+
+INSERT INTO products (name, description, price, stock_quantity, image_url, is_active, category_id)
+VALUES 
+-- Điện thoại
+(N'iPhone 15 Pro Max 256GB', N'Điện thoại cao cấp của Apple, màn hình OLED 6.7", chip A17 Pro.', 34999000, 10, N'https://cdn.tgdd.vn/Products/Images/42/328752/samsung-galaxy-a06-blue-thumbn-600x600.jpg', 1, 1),
+(N'Samsung Galaxy S24 Ultra', N'Máy flagship của Samsung, bút S-Pen, camera 200MP.', 29999000, 8, N'https://cdn.tgdd.vn/Products/Images/42/325799/redmi-13-yellow-thumb-600x600.jpg', 1, 1),
+(N'Xiaomi 14 Pro', N'Cấu hình mạnh, giá hợp lý, sạc nhanh 120W.', 17990000, 12, N'https://cdn.tgdd.vn/Products/Images/42/321892/oppo-reno12-5g-12gb-256gb-hong-thumb-600x600.jpg', 1, 1),
+
+-- Máy tính bảng
+(N'iPad Pro M2 11 inch', N'Máy tính bảng Apple M2, hỗ trợ Apple Pencil 2.', 24999000, 5, N'https://cdn.tgdd.vn/Products/Images/42/322124/oppo-reno12-pro-thumb-600x600.jpg', 1, 2),
+(N'Samsung Galaxy Tab S9', N'Màn hình AMOLED, kháng nước IP68, hiệu năng cao.', 18990000, 7, N'https://cdn.tgdd.vn/Products/Images/42/335915/samsung-galaxy-a26-5g-black-thumbn-600x600.jpg', 1, 2),
+(N'Lenovo Tab P12 Pro', N'Máy tính bảng Android giải trí và học tập.', 11990000, 9, N'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/44/328237/asus-vivobook-k3605zf-i5-rp745w-170225-112521-757-600x600.jpg', 1, 2),
+
+-- Tai nghe
+(N'AirPods Pro 2', N'Tai nghe không dây Apple, chống ồn chủ động.', 5990000, 15, N'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/44/328473/dell-vostro-3530-i5-80gg93-thumb-638754980276667501-600x600.jpg', 1, 3),
+(N'Sony WH-1000XM5', N'Tai nghe chụp tai cao cấp, pin lên đến 30 giờ.', 8990000, 6, N'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/44/296921/dell-inspiron-15-3520-i5u085w11blu-thumb-638754895829994663-600x600.jpg', 1, 3),
+(N'Samsung Galaxy Buds 2 Pro', N'Nhỏ gọn, âm thanh chất lượng cao, chống ồn.', 4990000, 10, N'https://cdn.tgdd.vn/Products/Images/42/338736/samsung-galaxy-z-flip7-red-thumb-600x600.jpg', 1, 3),
+
+-- Phụ kiện điện thoại
+(N'Ốp lưng iPhone 15 Pro Max', N'Ốp lưng silicon chính hãng Apple.', 890000, 20, N'https://cdn.tgdd.vn/Products/Images/42/320730/xiaomi-redmi-note-14-pro-thumb-600x600.jpg', 1, 4),
+(N'Kính cường lực Samsung S24', N'Bảo vệ màn hình hiệu quả.', 290000, 30, N'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/334969/tecno-spark-30-white-thumb-638761785148564781-600x600.jpg', 1, 4),
+(N'Giá đỡ điện thoại để bàn', N'Chất liệu kim loại chắc chắn.', 199000, 25, N'https://cdn.tgdd.vn/Products/Images/42/339180/vivo-y39-tim-thumb-600x600.jpg', 1, 4),
+
+-- Đồng hồ thông minh
+(N'Apple Watch Series 9', N'Đo nhịp tim, ECG, hỗ trợ thể thao.', 11990000, 4, N'https://cdn.tgdd.vn/Products/Images/42/329143/iphone-16-pro-titan-sa-mac.png', 1, 5),
+(N'Galaxy Watch 6 Classic', N'Thiết kế cổ điển, theo dõi sức khỏe.', 8490000, 6, N'https://cdn.tgdd.vn/Products/Images/42/328752/samsung-galaxy-a06-blue-thumbn-600x600.jpg', 1, 5),
+
+-- Sạc và pin dự phòng
+(N'Sạc nhanh 67W Xiaomi', N'Sạc nhanh có bảo vệ nhiệt.', 650000, 18, N'https://cdn.tgdd.vn/Products/Images/42/338738/samsung-galaxy-z-fold7-black-thumb-1-600x600.jpg', 1, 6),
+(N'Pin dự phòng Anker 20.000mAh', N'2 cổng sạc, công suất cao.', 1090000, 10, N'https://cdn.tgdd.vn/Products/Images/42/328752/samsung-galaxy-a06-blue-thumbn-600x600.jpg', 1, 6);
+
+----
+INSERT INTO stores (name, address, phone, is_active) VALUES
+(N'TechShop Quận 1', N'123 Lê Lợi, Quận 1, TP.HCM', '0901234567', 1),
+(N'TechShop Quận 7', N'456 Nguyễn Văn Linh, Quận 7, TP.HCM', '0902345678', 1),
+(N'TechShop Hà Nội', N'789 Trần Duy Hưng, Cầu Giấy, Hà Nội', '0903456789', 1);
+
+
+
+
+
+INSERT INTO vouchers (
+    code, description, discount_type, discount_value, min_order_amount, max_discount_amount, 
+    start_date, end_date, usage_limit, used_count, is_active
+) VALUES (
+    N'GG20', N'Giảm 20% cho đơn từ 500,000đ, tối đa 100,000đ', 
+    N'PERCENT', 20, 500000, 700000, 
+    '2025-06-01', '2025-12-31', 100, 0, 1
+);
+
+
+INSERT INTO vouchers (
+    code, description, discount_type, discount_value, min_order_amount, max_discount_amount, 
+    start_date, end_date, usage_limit, used_count, is_active
+) VALUES (
+    N'GIAM50K', N'Giảm ngay 50,000đ cho đơn từ 300,000đ', 
+    N'AMOUNT', 50000, 300000, NULL, 
+    '2025-07-05', '2025-12-31', 50, 0, 1
+);
+
+
+
+
+
+
+

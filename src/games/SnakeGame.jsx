@@ -239,6 +239,7 @@ const SnakeGame = ({ onGameEnd }) => {
           setHasSavedScore(true); // Đánh dấu đã lưu
           // Đợi một chút để đảm bảo score đã được cập nhật hoàn toàn
           setTimeout(() => {
+            // Lưu vào cả ScoreBoard và GameSessions
             saveHighScore(finalScoreRef.current).then(() => {
               // Gọi callback để refresh leaderboard
               if (onGameEnd) {
